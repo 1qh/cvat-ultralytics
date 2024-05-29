@@ -1,0 +1,40 @@
+metadata:
+  name: yolov8
+  namespace: cvat
+  annotations:
+    name: yolov8
+    type: detector
+    framework: pytorch
+    # change this accordingly to your model output/classes
+    spec: |
+      [
+        {"id": 0, "name": "class_0"}
+      ]
+spec:
+  description: yolov8
+  runtime: 'python:3.11'
+  handler: main:handler
+  eventTimeout: 30s
+
+  build:
+    image: yolov8
+    baseImage: ultralytics/ultralytics:latest-cpu
+    directives:
+      preCopy:
+        - kind: WORKDIR
+          value: /opt/nuclio
+
+  triggers:
+    myHttpTrigger:
+      maxWorkers: 1
+      kind: 'http'
+      workerAvailabilityTimeoutMilliseconds: 10000
+      attributes:
+        maxRequestBodySize: 33554432 # 32MB
+
+  platform:
+    attributes:
+      restartPolicy:
+        name: always
+        maximumRetryCount: 32
+      mountMode: volume
